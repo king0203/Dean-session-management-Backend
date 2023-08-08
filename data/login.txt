@@ -1,0 +1,8 @@
+{
+    "universityId":"harsh",
+    "password":"1234",
+}
+{
+    "universityId":"deep",
+    "password":"1234",
+}

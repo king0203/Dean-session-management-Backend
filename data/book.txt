@@ -1,0 +1,16 @@
+{
+    "universityId":"manav",
+    "date":"10-8-2023",
+}
+{
+    "universityId":"manav",
+    "date":"11-8-2023",
+}
+{
+    "universityId":"harsh",
+    "date":"10-8-2023",
+}
+{
+    "universityId":"harsh",
+    "date":"11-8-2023",
+}

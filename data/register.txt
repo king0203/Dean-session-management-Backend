@@ -1,0 +1,22 @@
+{
+    "universityId":"deep",
+    "password":"1234",
+    "role":"student"
+}
+{
+    "universityId":"darshan",
+    "password":"1234",
+    "role":"student"
+}
+
+{
+    "universityId":"harsh",
+    "password":"1234",
+    "role":"dean"
+}
+
+{
+    "universityId":"manav",
+    "password":"1234",
+    "role":"dean"
+}

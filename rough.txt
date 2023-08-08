@@ -1,0 +1,719 @@
+// const express = require("express");
+// const router = express.Router();
+// const { v4: uuidv4 } = require("uuid");
+// const Student = require("../models/Student");
+// const Session = require("../models/Session");
+// const authenticateToken = require("../middleware/authenticateToken");
+
+// // API for student login
+// router.post("/login/:studentType", (req, res) => {
+//   const { universityID, password } = req.body;
+//   const { studentType } = req.params;
+
+//   // Validate student credentials against the database
+//   // For simplicity, we'll use the same credentials for both Student A and Student B
+//   const validCredentials = { A: { universityID: "A123", password: "secret123" }, B: { universityID: "B456", password: "studentB123" } };
+
+//   if (!validCredentials[studentType] || universityID !== validCredentials[studentType].universityID || password !== validCredentials[studentType].password) {
+//     return res.status(401).json({ error: "Invalid credentials" });
+//   }
+
+//   // Generate a unique token for the student (using UUID)
+//   const token = uuidv4();
+
+//   // Save the token to the database (update the token in the Student model)
+//   Student.findOneAndUpdate({ universityID }, { token }, { new: true })
+//     .then(() => {
+//       res.json({ token });
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       res.sendStatus(500); // Internal Server Error
+//     });
+// });
+
+// // API for booking a session
+// router.post("/book/:studentType", authenticateToken, (req, res) => {
+//   const { universityID } = req.body;
+//   const { day, time } = req.body;
+//   const { studentType } = req.params;
+
+//   // Validate student type (A or B)
+//   if (!["A", "B"].includes(studentType)) {
+//     return res.status(400).json({ error: "Invalid student type" });
+//   }
+
+//   // Check if the requested slot is available
+//   const requestedSlot = { day, time };
+//   const deanAvailableSlots = [
+//     { day: "Thursday", time: "10:00 AM" },
+//     { day: "Friday", time: "10:00 AM" },
+//   ];
+
+//   if (!deanAvailableSlots.some((slot) => slot.day === day && slot.time === time)) {
+//     return res.status(400).json({ error: "Requested slot is not available" });
+//   }
+
+//   // Assuming we have a Session model to store the booked sessions
+//   const session = new Session({
+//     studentID: universityID,
+//     deanID: "", // This will be filled when the Dean accepts the booking
+//     slot: requestedSlot,
+//     status: "pending",
+//   });
+
+//   // Save the booked session to the database
+//   session
+//     .save()
+//     .then((savedSession) => {
+//       res.json(savedSession);
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       res.sendStatus(500); // Internal Server Error
+//     });
+// });
+
+// module.exports = router;
+
+// router.post("/register", async (req, res) => {
+//   const { universityId, password, role } = req.body;
+
+//   try {
+//     if (role.toLowerCase() === "student") {
+//       const student = new Student({
+//         universityId,
+//         password,
+//         token: uuidv4(), // Generate a new UUID as the token
+//       });
+//       await student.save();
+//       res.json(student);
+//     } else if (role.toLowerCase() === "dean") {
+//       const dean = new Dean({
+//         universityId,
+//         password,
+//         token: uuidv4(), // Generate a new UUID as the token
+//       });
+//       await dean.save();
+//       res.json(dean);
+//     } else {
+//       res.json({ message: "Invalid role" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+// route for login for student and dean
+// router.post("/login", async (req, res) => {
+//   const { universityId, password } = req.body;
+
+//   try {
+//     const student = await Student.findOne({ universityId });
+//     const dean = await Dean.findOne({ universityId });
+
+//     if (student) {
+//       if (student.password === password) {
+//         const token = uuidv4();
+//         student.token = token;
+//         await student.save();
+//         res.json({ token });
+//       } else {
+//         res.json({ message: "Invalid password" });
+//       }
+//     } else if (dean) {
+//       if (dean.password === password) {
+//         const token = uuidv4();
+//         dean.token = token;
+//         await dean.save();
+//         res.json({ token });
+//       } else {
+//         res.json({ message: "Invalid password" });
+//       }
+//     } else {
+//       res.json({ message: "Invalid university ID" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+
+
+
+
+
+
+
+
+// // route for student to see free sessions
+// router.get("/sessions/free", async (req, res) => {
+//   const { token } = req.headers;
+//   const thursdaysAndFridays = getThursdaysAndFridaysForNextMonth();
+  
+//   try {
+//     // Assuming you have a field named "authorization" in your Student model to store the token.
+//     const student = await Student.findOne({ id:token });
+//     console.log(student);
+//     if (student) {
+//       // Fetch all deanIds
+//       async function findBookedSessionsForAllDeans() {
+//         try {
+//           const deans = await Dean.find({}).populate('sessions');
+      
+//           deans.forEach(dean => {
+//             const bookedSessions = dean.sessions.filter(session => session.isBooked === true);
+//             console.log(`Booked sessions for Dean ${dean.id}:`, bookedSessions);
+//           });
+//         } catch (err) {
+//           console.error(err); // Handle error
+//         }
+//       }
+      
+//       const deans= await findBookedSessionsForAllDeans();
+      
+    
+
+
+
+//       // const deans = await Dean.find({}, 'id').lean();
+//       const deanIds = deans.map((dean) => dean.id);
+//       console.log(deanIds);
+//       const currentTime = new Date();
+//       // Fetch sessions where deanId is not in the deanIds array and endTime is greater than the current time.
+//       const sessions = await Session.find({
+//         deanId: { $nin: deanIds },
+//         endTime: { $gt: currentTime },
+//       });
+
+//       res.json(sessions);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// router.get('/sessions/free', async (req, res) => {
+//   const { authorization } = req.headers;
+
+//   try {
+//     const student = await Student.findOne({ id: authorization });
+//     if (student) {
+//       const deans = await Dean.find();
+//       const deansIds = deans.map((dean) => dean.id);
+//       const sessions = await Session.find({
+//         dean: { $nin: deansIds },
+//         endTime: { $gt: new Date() },
+//       });
+//       res.json(sessions);
+//     } else {
+//       res.json({ message: 'Invalid token' });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+// route for student to see booked sessions
+// router.get("/sessions/students", authenticateToken, async (req, res) => {
+//   const token = req.headers.authorization;
+
+//   try {
+//     const student = await Student.findOne({ token });
+
+//     if (student) {
+//       const sessions = await Session.find({
+//         studentId: student._id,
+//         endTime: { $gt: new Date() },
+//       });
+//       res.json(sessions);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// route for student to book a session
+// router.post("/sessions/book", authenticateToken, async (req, res) => {
+//   const token = req.headers.authorization;
+//   const { deanId, startTime, endTime } = req.body;
+
+//   try {
+//     const student = await Student.findOne({ token });
+
+//     if (student) {
+//       const session = new Session({
+//         studentId: student._id,
+//         deanId,
+//         startTime,
+//         endTime,
+//       });
+//       await session.save();
+//       res.json(session);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// route for dean to see pending sessions
+// router.get("/sessions/pending", authenticateToken, async (req, res) => {
+//   const token = req.headers.authorization;
+
+//   try {
+//     const dean = await Dean.findOne({ token });
+
+//     if (dean) {
+//       const sessions = await Session.find({
+//         deanId: dean._id,
+//         endTime: { $gt: new Date() },
+//       });
+//       res.json(sessions);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+
+// // Route for student to book a session
+// router.post("/sessions/book", async (req, res) => {
+//   const { token } = req.headers;
+//   const {
+//     deanId,
+//     startTime,
+//     endTime,
+//   } = req.body;
+
+//   try {
+//     const student = await Student.findOne({ id: token });
+
+//     if (student) {
+//       const session = await Session.create({
+//         startTime,
+//         endTime,
+//         studentId: student.id,
+//         deanId,
+//       });
+
+//       res.json(session);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+// // Route for dean to see pending sessions
+// router.get("/sessions/pending", async (req, res) => {
+//   const { token } = req.headers;
+
+//   try {
+//     const dean = await Dean.findOne({ id: token });
+
+//     if (dean) {
+//       const sessions = await Session.find({
+//         deanId: dean.id,
+//         endTime: { $gt: new Date() },
+//       });
+
+//       res.json(sessions);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// module.exports = router;
+
+
+
+
+// Route for student to see free sessions
+router.get("/sessions/students", async (req, res) => {
+  const { token } = req.headers;
+
+  try {
+    const student = await Student.findOne({ id: token });
+
+    if (student) {
+      const sessions = await Session.find({
+        studentId: student.id,
+        endTime: { $gt: new Date() },
+      });
+
+      res.json(sessions);
+    } else {
+      res.json({ message: "Invalid token" });
+    }
+  } catch (error) {
+    res.json({ message: error.message });
+  }
+});
+
+
+
+
+
+
+
+
+// const { addMonths, startOfMonth, endOfMonth } = require('date-fns');
+
+// // Helper function to get all Thursdays and Fridays for the next month
+// function getThursdaysAndFridaysForNextMonth() {
+//   const nextMonth = addMonths(new Date(), 1);
+//   const firstDayOfMonth = startOfMonth(nextMonth);
+//   const lastDayOfMonth = endOfMonth(nextMonth);
+
+//   const thursdaysAndFridays = [];
+//   let currentDate = new Date(firstDayOfMonth);
+
+//   while (currentDate <= lastDayOfMonth) {
+//     const dayOfWeek = currentDate.getDay();
+//     if (dayOfWeek === 4 /* Thursday */ || dayOfWeek === 5 /* Friday */) {
+//       thursdaysAndFridays.push(new Date(currentDate));
+//     }
+//     currentDate.setDate(currentDate.getDate() + 1);
+//   }
+
+//   return thursdaysAndFridays;
+// }
+
+// // Function to find booked sessions for all deans
+// async function findBookedSessionsForAllDeans() {
+//   try {
+//     const deans = await Dean.find({}).populate('sessions');
+//     return deans.map(dean => dean.sessions.filter(session => session.isBooked === true)).flat();
+//   } catch (err) {
+//     console.error(err);
+//     return [];
+//   }
+// }
+
+// // Route to get all free sessions of the next month
+// router.get("/sessions/free", async (req, res) => {
+//   const { token } = req.headers;
+//   const thursdaysAndFridays = getThursdaysAndFridaysForNextMonth();
+
+//   try {
+//     // Assuming you have a field named "authorization" in your Student model to store the token.
+//     const student = await Student.findOne({ id: token });
+
+//     if (student) {
+//       const bookedSessions = await findBookedSessionsForAllDeans();
+//       const bookedDates = bookedSessions.map(session => session.Date.toDateString());
+
+//       const freeSessions = thursdaysAndFridays.filter(date => !bookedDates.includes(date.toDateString()));
+//       res.json(freeSessions);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+
+// function getThursdaysAndFridaysForNextMonth() {
+//   const today = new Date();
+//   const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+//   const thursdaysAndFridays = [];
+
+//   while (today < nextMonth) {
+//     if (today.getDay() === 4 /* Thursday */ || today.getDay() === 5 /* Friday */) {
+//       thursdaysAndFridays.push(new Date(today)); // Create a new date object to avoid reference issues
+//     }
+//     today.setDate(today.getDate() + 1);
+//   }
+
+//   return thursdaysAndFridays;
+// }
+
+// router.post('/register', async (req, res) => {
+//   const { universityId, password, role } = req.body;
+
+//   try {
+//     if (role.toLowerCase() === 'student') {
+//       const student = await Student.create({ universityId, password });
+//       res.json(student);
+//     } else if (role.toLowerCase() === 'dean') {
+//       const dean = await Dean.create({ universityId, password });
+//       res.json(dean);
+//     } else {
+//       res.json({ message: 'Invalid role' });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// router.post('/login', async (req, res) => {
+//   const { universityId, password } = req.body;
+
+//   try {
+//     const student = await Student.findOne({ universityId });
+//     const dean = await Dean.findOne({ universityId });
+
+//     if (student) {
+//       if (student.password === password) {
+//         req.headers.token = student.id;
+//         res.json({ token: student.id });
+//       } else {
+//         res.json({ message: 'Invalid password' });
+//       }
+//     } else if (dean) {
+//       if (dean.password === password) {
+//         req.headers.token = dean.id;
+//         res.json({ token: dean.id });
+//       } else {
+//         res.json({ message: 'Invalid password' });
+//       }
+//     } else {
+//       res.json({ message: 'Invalid university ID' });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+// // Route to get all free sessions from today to the next one month
+// router.get("/sessions/free", async (req, res) => {
+//   const { token } = req.headers;
+//   const today = startOfDay(new Date());
+//   const nextMonth = addMonths(today, 1);
+//   const thursdaysAndFridays = getThursdaysAndFridaysInRange(today, nextMonth);
+
+//   try {
+//     // Assuming you have a field named "authorization" in your Student model to store the token.
+//     const student = await Student.findOne({ id: token });
+
+//     if (student) {
+//       const deans = await Dean.find({}).populate('sessions');
+
+//       // Function to check if a dean has a booked session on a specific date
+//       function hasBookedSession(dean, date) {
+//         const dateString = startOfDay(date).toISOString();
+//         return dean.sessions.some(session => startOfDay(session.Date).toISOString() === dateString);
+//       }
+
+//       // Generate the availability for each dean on each Thursday and Friday
+//       const availability = [];
+//       for (const dean of deans) {
+//         const deanAvailability = thursdaysAndFridays.map(date => {
+//           const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+//           const isAvailable = !hasBookedSession(dean, date);
+//           return `${dean.universityId} : ${formattedDate} ${isAvailable ? 'available' : 'unavailable'}`;
+//         });
+//         availability.push(deanAvailability);
+//       }
+
+//       res.json(availability);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// // Route to get all free sessions from today to the next one month
+// router.get("/sessions/free", authenticateToken, async (req, res) => {
+//   const token = req.headers.authorization;
+//   const today = startOfDay(new Date());
+//   const nextMonth = addMonths(today, 1);
+//   const thursdaysAndFridays = getThursdaysAndFridaysInRange(today, nextMonth);
+
+//   try {
+//     // Assuming you have a field named "authorization" in your Student model to store the token.
+//     const student = await Student.findOne({ id: token });
+
+//     if (student) {
+//       const deans = await Dean.find({}).populate('sessions');
+
+//       // Function to check if a dean has a booked session on a specific date
+//       function hasBookedSession(dean, date) {
+//         const dateString = startOfDay(date).toISOString();
+//         return dean.sessions.some(session => startOfDay(session.Date).toISOString() === dateString);
+//       }
+
+//       // Generate the availability for each dean on each Thursday and Friday
+//       const availability = [];
+//       for (const dean of deans) {
+//         const deanAvailability = thursdaysAndFridays.map(date => {
+//           const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+//           const isAvailable = !hasBookedSession(dean, date);
+//           return `${dean.universityId} : ${formattedDate} ${isAvailable ? 'available' : 'unavailable'}`;
+//         });
+//         availability.push(deanAvailability);
+//       }
+
+//       res.json(availability);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// // Route for student to book a session
+// router.post("/bookSession",authenticateToken, async (req, res) => {
+//   const token = req.headers.authorization;
+//   const { date, universityId } = req.body; // Modified to ask for date and deanId
+//   try {
+//     // Find the student by the provided token
+//     const student = await Student.findOne({ id: token });
+
+//     if (student) {
+//       // Check if the dean exists in the database
+//       const dean = await Dean.findOne({ universityId: universityId });
+
+//       if (!dean) {
+//         return res.json({ message: "Dean not found" });
+//       }
+
+//       // Parse the date string into a Date object using the desired format "DD-MM-YYYY"
+//       const parts = date.split("-");
+//       const selectedDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+//       // Check if the selected date is a Thursday (dayOfWeek 4) or Friday (dayOfWeek 5)
+//       if (selectedDate.getDay() !== 4 && selectedDate.getDay() !== 5) {
+//         return res.json({ message: "You can only book sessions for Thursdays or Fridays." });
+//       }
+
+//       // Check if the dean already has a session booked for the selected Thursday or Friday
+//       const existingSession = await Session.findOne({
+//         dean: dean._id,
+//         Date: {
+//           $gte: new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()),
+//           $lt: new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1),
+//         },
+//       });
+
+//       if (existingSession) {
+//         return res.json({ message: "The dean already has a session booked for this Thursday or Friday." });
+//       }
+
+//       // Create a new session in the database
+//       const session = await Session.create({
+//         Date: selectedDate, // Assuming date is a string representation of the date
+//         student: student._id, // Store the student's ObjectId in the session
+//         dean: dean._id, // Store the dean's ObjectId in the session
+//       });
+
+//       // Add the session to the student's and dean's sessions array
+//       student.sessions.push(session._id);
+//       await student.save();
+
+//       dean.sessions.push(session._id);
+//       await dean.save();
+
+//       res.json(session);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+// // Route to get all free sessions from today to the next one month
+// router.get("/freeSessions", authenticateToken, async (req, res) => {
+//   const token = req.headers.authorization;
+//   const today = startOfDay(new Date());
+//   const nextMonth = addMonths(today, 1);
+//   const thursdaysAndFridays = getThursdaysAndFridaysInRange(today, nextMonth);
+
+//   try {
+//     // Assuming you have a field named "authorization" in your Student model to store the token.
+//     const student = await Student.findOne({ id: token });
+
+//     if (student) {
+//       const deans = await Dean.find({}).populate('sessions');
+
+//       // Function to check if a dean has a booked session on a specific date
+//       function hasBookedSession(dean, date) {
+//         const dateString = startOfDay(date).toISOString();
+//         return dean.sessions.some(session => startOfDay(session.Date).toISOString() === dateString);
+//       }
+
+//       // Generate the availability for each dean on each Thursday and Friday
+//       const availability = [];
+//       for (const dean of deans) {
+//         const deanData = {
+//           dean: dean.universityId,
+//           booked: [],
+//           available: []
+//         };
+
+//         thursdaysAndFridays.forEach(date => {
+//           const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+//           const isAvailable = !hasBookedSession(dean, date);
+//           if (isAvailable) {
+//             deanData.available.push(formattedDate);
+//           } else {
+//             const bookedSessions = dean.sessions.filter(session => startOfDay(session.Date).toISOString() === startOfDay(date).toISOString()).map(session => session._id);
+//             deanData.booked.push({
+//               date: formattedDate,
+//               sessions: bookedSessions
+//             });
+//           }
+//         });
+
+//         availability.push(deanData);
+//       }
+
+//       res.json(availability);
+//     } else {
+//       res.json({ message: "Invalid token" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+
+// // Route for dean to see pending sessions
+// router.get("/pendingSessions",authenticateToken, async (req, res) => {
+//   const token = req.headers.authorization;
+
+//   try {
+//     const dean = await Dean.findOne({ id: token });
+
+//     if (!dean) {
+//       return res.json({ message: "Invalid token" });
+//     }
+
+//     const currentTime = new Date();
+//     const pendingSessions = await Session.find({
+//       dean: dean._id,
+//       Date: { $gte: currentTime },
+//     }).select("Date"); // Select only the Date field
+
+//     res.json(pendingSessions);
+//   } catch (error) {
+//     res.json({ message: error.message });
+//   }
+// });
+
+// module.exports = router;
