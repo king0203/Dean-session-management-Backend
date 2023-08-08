@@ -1,13 +1,6 @@
-const mongoose = require('mongoose');
-const { v4: uuidv4 } = require("uuid");
+const mongoose = require("mongoose");
 
 const sessionSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    default: () => uuidv4(),
-    unique: true,
-    index: true,
-  },
   startTime: {
     type: Date,
     required: true,
@@ -18,16 +11,16 @@ const sessionSchema = new mongoose.Schema({
   },
   student: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Student',
+    ref: 'User',
     index: true,
   },
   dean: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Dean',
+    ref: 'User',
     index: true,
   },
 });
 
-const Session = mongoose.model('Session', sessionSchema);
+const Session = mongoose.model("Session", sessionSchema);
 
 module.exports = Session;

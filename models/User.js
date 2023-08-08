@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid"); // Import uuidv4 from the uuid package
+const { v4: uuidv4 } = require("uuid");
 
-const deanSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   id: {
     type: String,
     default: () => uuidv4(),
@@ -18,14 +18,12 @@ const deanSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  sessions: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Session',
-    },
-  ],
+  isDean: {
+    type: Boolean,
+    required: true,
+  },
 });
 
-const Dean = mongoose.model('Dean', deanSchema);
+const User = mongoose.model("User", userSchema);
 
-module.exports = Dean;
+module.exports = User;

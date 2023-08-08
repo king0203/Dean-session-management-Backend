@@ -1,12 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
 
 mongoose
-  .connect("mongodb+srv://darshan:Hk73W9uBQOrokHyQ@cluster0.lsss9cj.mongodb.net/?retryWrites=true&w=majority", {
+  .connect(process.env.MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -14,7 +15,7 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // API routes for student and dean
-const Router = require("./routes/server");
+const Router = require("./routes/main");
 
 // Mount the student routes
 app.use("/", Router);
